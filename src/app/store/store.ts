@@ -1,6 +1,7 @@
 import {
   BehaviorSubject,
   distinctUntilChanged,
+  map,
   Observable,
   pluck,
   Subject,
@@ -31,8 +32,12 @@ export abstract class Store<T> {
     return this.state.asObservable().pipe(distinctUntilChanged());
   }
 
-  select(key: keyof T): Observable<T[keyof T]> {
+  pluck<K extends keyof T>(key: K): Observable<T[K]> {
     return this.get().pipe(pluck(key), distinctUntilChanged());
+  }
+
+  select<S>(predicate: (state: T) => S): Observable<S> {
+    return this.get().pipe(map(predicate), distinctUntilChanged());
   }
 
   patch(args: Partial<T>): void {
