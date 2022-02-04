@@ -1,12 +1,12 @@
 import { Injectable } from '@angular/core';
 import { combineLatest, map } from 'rxjs';
 
-import { TodosStore, TODO_FILTER } from './todos.store';
+import { TodoStore, TODO_FILTER } from './todo.store';
 
 @Injectable({
   providedIn: 'root',
 })
-export class TodosService {
+export class TodoService {
   activeFilter$ = this.todosStore.select((state) => state.activeFilter);
 
   todos$ = this.todosStore.select((state) => state.todos);
@@ -24,5 +24,5 @@ export class TodosService {
     })
   );
 
-  constructor(private todosStore: TodosStore) {}
+  constructor(private todosStore: TodoStore) {}
 }

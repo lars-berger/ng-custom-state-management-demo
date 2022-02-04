@@ -17,9 +17,9 @@ export interface TodosState {
 @Injectable({
   providedIn: 'root',
 })
-export class TodosStore extends Store<TodosState> {
+export class TodoStore extends Store<TodosState> {
   constructor() {
-    super({ name: 'todos', initializerFn: TodosStore.createInitialState });
+    super({ name: 'todos', initializerFn: TodoStore.createInitialState });
   }
 
   static createInitialState(): TodosState {
