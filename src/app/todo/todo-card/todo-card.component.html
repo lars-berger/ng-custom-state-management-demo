@@ -1,1 +1,7 @@
-<p>todo-card works!</p>
+<div class="todo-card">
+  <input type="checkbox" [formControl]="isCompleteCtrl" />
+
+  {{ todo.title }}
+
+  <button (click)="delete.emit(todo.id)">Delete</button>
+</div>

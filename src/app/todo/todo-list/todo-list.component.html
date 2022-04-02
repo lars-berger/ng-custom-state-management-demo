@@ -1,1 +1,17 @@
-<p>todo-list works!</p>
+<div class="todo-list">
+  <input
+    type="text"
+    placeholder="Add Todo..."
+    [formControl]="todoTitleCtrl"
+    (keydown.enter)="onCreate()"
+  />
+
+  <h1 class="todo-list__heading">Todos</h1>
+
+  <app-todo-card
+    *ngFor="let todo of todos$ | async"
+    (delete)="onDelete($event)"
+    (complete)="onComplete($event)"
+    [todo]="todo"
+  ></app-todo-card>
+</div>
