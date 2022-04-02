@@ -1,29 +1,14 @@
-import {
-  BehaviorSubject,
-  distinctUntilChanged,
-  map,
-  Observable,
-  pluck,
-  Subject,
-} from 'rxjs';
+import { BehaviorSubject, distinctUntilChanged, map, Observable, pluck, Subject } from 'rxjs';
 
 import { StoreConfig } from './store-config';
 import { StoreChange } from './store-change';
 
 export abstract class Store<T> {
   private state!: BehaviorSubject<T>;
-
-  private get name(): string {
-    return this.storeConfig.name;
-  }
-
-  private get initializerFn(): Function {
-    return this.storeConfig.initializerFn;
-  }
+  private storeConfig!: StoreConfig<T>;
 
   private reduxDevToolRef =
-    (window as any)['__REDUX_DEVTOOLS_EXTENSION__'] ||
-    (window as any)['devToolsExtension'];
+    (window as any)['__REDUX_DEVTOOLS_EXTENSION__'] || (window as any)['devToolsExtension'];
 
   private reduxDevToolConnection = this.reduxDevToolRef.connect({
     name: 'Test123',
@@ -33,7 +18,8 @@ export abstract class Store<T> {
   /** Observable of changes to state. Includes previous and incoming value. */
   changes$: Observable<StoreChange<T>> = new Subject();
 
-  constructor(private storeConfig: StoreConfig<T>) {
+  constructor(storeConfig: StoreConfig<T>) {
+    this.storeConfig = storeConfig;
     this.state = new BehaviorSubject(this.getFreshState());
     this.emitViaDevtool('@@INIT', this.getFreshState());
   }
@@ -59,9 +45,17 @@ export abstract class Store<T> {
     this.emitViaDevtool('Patch', updatedState);
   }
 
-  set(state: T): void {
-    this.state.next(state);
-    this.emitViaDevtool('Set', state);
+  update(stateOrCallback: T | ((currentState: Readonly<T>) => T)): void {
+    if (typeof stateOrCallback === 'function') {
+      //@ts-ignore
+      const updatedState: T = stateOrCallback(this.state.value);
+      this.state.next(updatedState);
+      this.emitViaDevtool('Update', updatedState);
+      return;
+    }
+
+    this.state.next(stateOrCallback);
+    this.emitViaDevtool('Update', stateOrCallback);
   }
 
   reset(): void {
@@ -77,14 +71,14 @@ export abstract class Store<T> {
   }
 
   private getFreshState(): T {
-    return this.initializerFn();
+    return this.storeConfig.initializerFn();
   }
 
   /** Emit updated state to Redux devtool. */
   private emitViaDevtool(actionName: string, state: T): void {
     this.reduxDevToolConnection.send(
-      `[${this.name}] ${actionName}`,
-      { [this.name]: state },
+      `[${this.storeConfig.name}] ${actionName}`,
+      { [this.storeConfig.name]: state },
       false,
       'Test123'
     );
